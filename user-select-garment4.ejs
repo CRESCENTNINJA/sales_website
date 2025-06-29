@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Select Your Garment – RCT Tailors</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#f3f4f6;min-height:100vh;font-size:18px;line-height:1.6}
+    .container{max-width:1100px;margin:40px auto;padding:0 20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}
+    .card{position:relative;background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:.3s;text-align:center}
+    .card.available{border:2px solid #25D366}.card.unavailable{opacity:.5;background:#fef2f2;border:2px solid #f87171}
+    .badge{position:absolute;top:12px;right:12px;padding:6px 12px;border-radius:20px;font-size:14px;font-weight:600;color:#fff}
+    .badge.available{background:#25D366}.badge.unavailable{background:#dc2626}
+    .emoji{font-size:48px;margin-bottom:12px}.name{font-size:20px;font-weight:600;margin-bottom:6px;text-transform:capitalize}
+    .price-row{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:16px}
+    .old-price{font-size:16px;text-decoration:line-through;color:#6b7280}.final-price{font-size:18px;color:#25D366;font-weight:600}.discount{font-size:14px;color:#dc2626;font-weight:700}
+    .btn{margin-top:12px;padding:10px 16px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer}
+    .btn.primary{background:#25D366;color:#fff}.btn.secondary{background:#6b7280;color:#fff}
+    .dropup-trigger{cursor:pointer;text-align:right;font-size:18px;font-weight:600;margin-bottom:6px}
+    .dropup-tray{display:none;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;max-height:200px;overflow-y:auto}
+    .dropup-item{display:flex;justify-content:space-between;padding:4px 0}
+    .cart-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -2px 8px rgba(0,0,0,.1);padding:14px 20px;display:none;flex-direction:column;gap:10px;z-index:999}
+    .cart-items{max-height:150px;overflow-y:auto}.cart-item{display:flex;justify-content:space-between;margin:4px 0}
+    .cart-total{text-align:right;font-weight:700}
+    .checkout-btn{background:#25D366;color:#fff;padding:12px 20px;border:none;border-radius:10px;font-size:18px;font-weight:700;cursor:pointer}
+    .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000}
+    .modal-body{background:#fff;border-radius:16px;padding:30px;max-width:420px;margin:10% auto;text-align:center;position:relative}
+    .close{position:absolute;top:12px;right:20px;font-size:24px;cursor:pointer;color:#999}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-3xl font-bold text-center mb-8">Select Your Garment</h1>
+    <div id="garmentGrid" class="grid"></div>
+
+    <div class="mt-8">
+      <div class="dropup-trigger" onclick="toggleDropup()">^ View Cart Items</div>
+      <div id="dropupTray" class="dropup-tray">
+        <div class="dropup-item font-bold"><span>Name</span><span>Qty</span><span>Price</span><span>Delivery</span></div>
+        <div id="dropupItems"></div>
+      </div>
+    </div>
+
+    <!-- Sticky cart bar -->
+    <div id="cartBar" class="cart-bar">
+      <div id="cartItems" class="cart-items"></div>
+      <div id="cartTotal" class="cart-total">Total: ₹0</div>
+      <button class="checkout-btn" onclick="openCheckoutModal()">Checkout</button>
+    </div>
+  </div>
+
+  <!-- Measurement modal -->
+  <div id="measurementModal" class="modal">
+    <div class="modal-body">
+      <span class="close" onclick="closeModal('measurementModal')">×</span>
+      <h2 class="text-xl font-bold mb-4">Measurement Required</h2>
+      <p class="mb-6">Please provide your measurements so we can tailor your garment.</p>
+      <button class="btn primary" onclick="alert('Shop Location info')">Shop Location</button>
+      <button class="btn secondary" onclick="alert('Request Home Visit')">Home Visit</button>
+    </div>
+  </div>
+
+  <!-- Checkout modal -->
+  <div id="checkoutModal" class="modal">
+    <div class="modal-body">
+      <span class="close" onclick="closeModal('checkoutModal')">×</span>
+      <h2 class="text-xl font-bold mb-4">Complete Your Order</h2>
+      <p class="mb-6"><del>₹50</del> ₹0 pickup fee <span class="text-green-600 font-bold">(Offer!)</span></p>
+      <button type="button" class="btn primary mb-4" onclick="placeOrder('Purchase & Delivery')">Purchase & Delivery</button>
+      <button type="button" class="btn secondary" onclick="placeOrder('Arrange Pickup')">Arrange Pickup</button>
+      <p class="mt-6 text-gray-600">Get your fabrics crafted and delivered with zero pickup charges!</p>
+    </div>
+  </div>
+
+  <script>
+    /* ---- Data from server ---- */
+    const backendMeasurements = <%- JSON.stringify(measurements) %>;
+    const cart = {};
+
+    /* ---- Garment definitions ---- */
+    const garmentTypes = [
+      { type: 'shirt', emoji: '👕', checkFields: ['chest','waist','shirtLength'] },
+      { type: 'pant',  emoji: '👖', checkFields: ['waist','length','thigh'] },
+      { type: 'kurta', emoji: '👘', checkFields: ['chest','length','sleeveLength'] },
+      { type: 'formalCoat', emoji: '🧥', checkFields: ['chest','sleeveLength','coatLength'] },
+      { type: 'pajama', emoji: '🩳', checkFields: ['waist','length','thigh'] }
+    ];
+
+    /* ---- Helpers ---- */
+    function checkMeasurementAvailability(garment, meas) {
+      if (!meas || !meas[garment] || typeof meas[garment] !== 'object') return false;
+      const fields = garmentTypes.find(g=>g.type===garment).checkFields;
+      return fields.filter(f => meas[garment][f]).length >= 2;
+    }
+    function toggleDropup() {
+      const tray = document.getElementById('dropupTray');
+      tray.style.display = tray.style.display==='block' ? 'none' : 'block';
+    }
+    function openModal(id){ document.getElementById(id).style.display='block'; }
+    function closeModal(id){ document.getElementById(id).style.display='none'; }
+    function openMeasurementModal(){ openModal('measurementModal'); }
+    function openCheckoutModal(){ openModal('checkoutModal'); }
+
+    /* ---- Cart functions ---- */
+    function addToCart(type, price){
+      cart[type] = cart[type] || { qty:0, price, delivery:0 };
+      cart[type].qty++;
+      updateCart();
+    }
+    function updateCart(){
+      const itemsEl  = document.getElementById('cartItems');
+      const trayEl   = document.getElementById('dropupItems');
+      let total = 0;
+      itemsEl.innerHTML=''; trayEl.innerHTML='';
+      for(const t in cart){
+        const it = cart[t];
+        const line = it.qty * it.price;
+        total += line;
+        itemsEl.insertAdjacentHTML('beforeend', `<div class="cart-item">${t} x${it.qty}: ₹${line}</div>`);
+        trayEl.insertAdjacentHTML('beforeend', `
+          <div class="dropup-item"><span>${t}</span><span>${it.qty}</span><span>₹${line}</span><span>₹${it.delivery}</span></div>
+        `);
+      }
+      document.getElementById('cartTotal').textContent = 'Total: ₹' + total;
+      document.getElementById('cartBar').style.display = total>0 ? 'flex' : 'none';
+    }
+
+    /* ---- Render garment cards ---- */
+    function renderGarments(){
+      const grid = document.getElementById('garmentGrid');
+      grid.innerHTML='';
+      garmentTypes.forEach(g=>{
+        const available = checkMeasurementAvailability(g.type, backendMeasurements);
+        const price     = available && backendMeasurements[g.type] ? Number(backendMeasurements[g.type].price) : NaN;
+        const orgprice  = available && backendMeasurements[g.type] ? Number(backendMeasurements[g.type].orgprice): NaN;
+        const discount  = (!isNaN(price)&&!isNaN(orgprice)&&orgprice>0)
+                          ? `${Math.round((1-price/orgprice)*100)}% saved` : '0%';
+
+        grid.insertAdjacentHTML('beforeend', `
+          <div class="card ${available?'available':'unavailable'}">
+            <div class="badge ${available?'available':'unavailable'}">${available?'Available':'Not Available'}</div>
+            <div class="emoji">${g.emoji}</div>
+            <div class="name">${g.type}</div>
+            <div class="price-row">
+              <span class="old-price">₹${isNaN(orgprice)?'N/A':orgprice}</span>
+              <span class="final-price">₹${isNaN(price)?'N/A':price}</span>
+              <span class="discount">${discount}</span>
+            </div>
+            ${available && !isNaN(price)
+              ? `<button class="btn primary" onclick="addToCart('${g.type}', ${price})">Add to Cart</button>`
+              : `<button class="btn secondary" onclick="openMeasurementModal()">We need measurement</button>`}
+          </div>
+        `);
+      });
+    }
+
+    /* ---- Geolocation helper ---- */
+    function getCoords(){
+      return new Promise(res=>{
+        if(!navigator.geolocation) return res({});
+        navigator.geolocation.getCurrentPosition(
+          p=>res({latitude:p.coords.latitude, longitude:p.coords.longitude}),
+          ()=>res({})
+        );
+      });
+    }
+
+    /* ---- Place order ---- */
+    async function placeOrder(noteLabel){
+      if(Object.keys(cart).length===0){
+        alert('Cart is empty'); return;
+      }
+      const coords = await getCoords();
+      const itemsArr = Object.entries(cart).map(([g,obj])=>({ garment:g, quantity:obj.qty }));
+      const totalAmt = Object.values(cart).reduce((s,o)=>s+o.qty*o.price,0);
+
+      try{
+        const res = await fetch('/order/place',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            items: itemsArr,
+            totalAmount: totalAmt,
+            latitude:   coords.latitude  ? coords.latitude.toString()  : '',
+            longitude:  coords.longitude ? coords.longitude.toString() : '',
+            notes: noteLabel
+          })
+        });
+        const text = await res.text();
+        if(res.ok){
+          alert(text || 'Order placed!');
+          window.location.href = '/order/confirmation'; // adjust if you have a dedicated confirmation page
+        }else{
+          alert(text || 'Server error');
+        }
+      }catch(err){
+        console.error(err);
+        alert('Could not place order');
+      }
+    }
+
+    /* ---- Init ---- */
+    renderGarments();
+  </script>
+</body>
+</html>

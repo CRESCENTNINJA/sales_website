@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Add Multiple Garment Measurements</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; }
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: #25D366; box-shadow: 0 0 0 1px #25D366;
+    }
+    .btn-green { background-color: #25D366; color: #fff; }
+    #submitBtnWrapper {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      padding: 1rem;
+      box-shadow: 0 -1px 5px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-2 pb-24">
+
+  <div class="w-full max-w-md mx-auto bg-white p-5 rounded-xl shadow">
+    <!-- Display customer info at top -->
+    <div class="mb-6 text-center">
+      <h2 class="text-lg font-bold">Measurements for</h2>
+      <p class="text-xl"><%= customerName %></p>
+      <p class="text-gray-600">Phone: <%= customerPhone %></p>
+    </div>
+
+
+
+
+
+  <div class="w-full max-w-md mx-auto bg-white p-5 rounded-xl shadow">
+    <h1 class="text-xl font-bold text-center mb-4">Add Measurements</h1>
+
+    <form action="/admin/add-measurement" method="POST" id="measurementForm" class="space-y-4">
+      <!-- Garment selector row -->
+      <div class="flex gap-2 items-end sticky top-0 bg-white z-10 pb-2">
+        <div class="flex-1">
+          <label class="block mb-1">Choose Garment to Add:</label>
+          <select id="garmentSelect" class="w-full p-2 border rounded-lg">
+            <option value="">-- Select --</option>
+            <option value="pajama">Pajama</option>
+            <option value="kurta">Kurta</option>
+            <option value="pant">Pant</option>
+            <option value="shirt">Shirt</option>
+            <option value="formalCoat">Formal Coat</option>
+          </select>
+        </div>
+        <button type="button" id="addGarmentBtn" class="py-2 px-4 rounded-lg btn-green whitespace-nowrap">Add</button>
+      </div>
+
+      <!-- Dynamic garment sections here -->
+      <div id="garmentsWrapper" class="space-y-4"></div>
+
+      <!-- <input type="hidden" name="customerId" value="" /> -->
+      <input type="hidden" name="customerId" value="<%= customerId %>" />
+
+      <!-- Submit Button Floating at Bottom -->
+      <div id="submitBtnWrapper">
+        <button type="submit" class="w-full py-2 rounded-lg btn-green">Save All Measurements</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const garmentsWrapper = document.getElementById('garmentsWrapper');
+    const garmentSelect   = document.getElementById('garmentSelect');
+    const addBtn          = document.getElementById('addGarmentBtn');
+
+    // Track garments already added so we don't duplicate
+    const addedGarments   = new Set();
+
+    const measurements = {
+      pajama:     ['waist','hip','thigh','calf','length'],
+      kurta:      ['chest','waist','hip','shoulder','sleeveLength','length'],
+      pant:       ['waist','hip','thigh','knee','bottom','length','crotch'],
+      shirt:      ['chest','waist','hip','shoulder','sleeveLength','shirtLength','neck','cuff'],
+      formalCoat: ['chest','waist','hip','shoulder','sleeveLength','coatLength','backLength','bicep']
+    };
+
+    // Helper to create numeric input
+    function createNumericInput(field, garment) {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <label class="block mb-1 capitalize">${field}:</label>
+        <input name="${garment}[${field}]" type="number" inputmode="numeric" step="0.1" class="w-full p-2 border rounded-lg" required />
+      `;
+      return div;
+    }
+
+    // Build a garment section card
+    function addGarmentSection(garment) {
+      const section = document.createElement('div');
+      section.className = 'border rounded-lg p-3 bg-gray-50';
+      section.id = `section-${garment}`;
+
+      // Header with remove option
+      section.innerHTML = `<div class="flex justify-between items-center mb-2">
+        <h3 class="font-semibold capitalize">${garment}</h3>
+        <button type="button" data-remove="${garment}" class="text-red-600 text-sm">Remove</button>
+      </div>`;
+
+      // Add measurement fields
+      measurements[garment].forEach(field => {
+        section.appendChild(createNumericInput(field, garment));
+      });
+
+      // Special requirement textarea for this garment
+      const noteDiv = document.createElement('div');
+      noteDiv.classList.add('mt-2');
+      noteDiv.innerHTML = `
+        <label class="block mb-1">Special Requirement (optional):</label>
+        <textarea name="${garment}[specialRequirement]" rows="2" class="w-full p-2 border rounded-lg" placeholder="Any fitting requests or comments..."></textarea>
+      `;
+      section.appendChild(noteDiv);
+
+      garmentsWrapper.prepend(section); // Add to top instead of end
+      addedGarments.add(garment);
+    }
+
+    // Add garment button handler
+    addBtn.addEventListener('click', () => {
+      const selected = garmentSelect.value;
+      if (!selected) return;
+      if (addedGarments.has(selected)) {
+        alert('This garment is already added.');
+        return;
+      }
+      addGarmentSection(selected);
+      garmentSelect.value = '';
+    });
+
+    // Event delegation for remove buttons
+    garmentsWrapper.addEventListener('click', (e) => {
+      const removeGarment = e.target.dataset.remove;
+      if (removeGarment) {
+        const section = document.getElementById(`section-${removeGarment}`);
+        section.remove();
+        addedGarments.delete(removeGarment);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!-- views/dashboard.ejs -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard</title>
+  <style>
+    body {
+      background: #f3f4f6;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      margin: 0; padding: 0;
+      color: #333;
+    }
+    header, footer { background: #fff; padding: 0.5rem; text-align: center; }
+    header img { height: 40px; vertical-align: middle; }
+    .container { max-width: 800px; margin: 1rem auto; }
+    .stats { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-around; }
+    .card {
+      background: #fff;
+      flex: 1 1 45%;
+      padding: 1rem; margin: 0.5rem;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .card h2 { margin: 0.5rem 0; font-size: 1.2rem; }
+    .card p  { font-size: 2rem; color: #25D366; margin: 0; }
+    button {
+      background: #25D366; color: #fff;
+      border: none; padding: 0.6rem 1rem; border-radius: 8px;
+      font-size: 1rem; cursor: pointer;
+    }
+    button:hover { opacity: 0.9; }
+    footer p { margin: 0.3rem 0; font-size: 0.9rem; color: #666; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="/logo.png" alt="Logo" />
+    <span style="font-size:1.2rem; margin-left:0.5rem;">App Name</span>
+  </header>
+  <div class="container">
+    <h1>Dashboard</h1>
+    <div class="stats">
+      <div class="card">
+        <h2>Total Orders</h2>
+        <p><%= totalOrders %></p>
+      </div>
+      <div class="card">
+        <h2>Amount Received</h2>
+        <p>₹<%= totalAmount %></p>
+      </div>
+      <div class="card">
+        <h2>Pending Orders</h2>
+        <p><%= pendingOrders %></p>
+      </div>
+      <div class="card">
+        <h2>Delivered Today</h2>
+        <p><%= deliveredToday %></p>
+      </div>
+      <!-- Add more cards if needed -->
+    </div>
+  </div>
+  <footer>
+    <p>Location: Bengaluru, India</p>
+    <p>Support: +91-XXXXXXXXXX</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login</title>
+  <style>
+    /* Base & Layout */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #333;
+    }
+    .card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      text-align: center;
+      color: #25D366;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 1rem;
+      width: 60px;
+      height: 60px;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #25D366;
+      box-shadow: 0 0 0 2px rgba(37,211,102,0.2);
+    }
+    .hint {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    /* Toggle */
+    .toggle-login {
+      text-align: right;
+      margin-bottom: 1rem;
+    }
+    .toggle-login button {
+      background: none;
+      border: none;
+      color: #25D366;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: opacity 0.2s;
+    }
+    .toggle-login button:hover {
+      opacity: 0.7;
+    }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background-color: #25D366;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    .submit-btn:hover {
+      background-color: #1ebe5c;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #777;
+    }
+    .footer a {
+      color: #25D366;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" role="main" aria-labelledby="loginTitle">
+    <img src="logo.png" alt="App Logo" class="logo">
+    <h1 id="loginTitle">MyAdmin Panel</h1>
+
+    <div class="toggle-login">
+      <!-- <button id="toggleBtn" type="button">Use OTP instead</button> -->
+    </div>
+
+    <form id="loginForm" , type="get" , method="/admin/login" >
+      <div class="form-group">
+        <label for="mobile">Mobile Number</label>
+        <input
+          type="tel"
+          id="mobile"
+          name="mobile"
+          placeholder="Enter your mobile"
+          inputmode="numeric"
+          pattern="[0-9]{10}"
+          required
+        />
+        <div class="hint">10-digit number, no spaces or dashes</div>
+      </div>
+
+      <!-- Password Input -->
+      <div class="form-group" id="passwordGroup">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+        />
+      </div>
+
+      <!-- OTP Input (hidden by default) -->
+      <!-- <div class="form-group" id="otpGroup" style="display:none;">
+        <label for="otp" >One-Time Password (OTP)</label>
+        <input
+          type="text"
+          id="otp"
+          name="otp"
+          placeholder="Enter OTP"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          required
+        />
+        <div class="hint">We’ll send it via SMS automatically.</div>
+      </div> -->
+
+      <button class="submit-btn">Log In</button>
+    </form>
+
+    <div class="footer">
+      <div>Your Location: Bangalore, India</div>
+      <div><a href="mailto:support@example.com">support@example.com</a></div>
+    </div>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggleBtn');
+    const passwordGroup = document.getElementById('passwordGroup');
+    const otpGroup     = document.getElementById('otpGroup');
+    let useOTP = false;
+
+    toggleBtn.addEventListener('click', () => {
+      useOTP = !useOTP;
+      passwordGroup.style.display = useOTP ? 'none' : 'block';
+      otpGroup.style.display      = useOTP ? 'block' : 'none';
+      toggleBtn.textContent       = useOTP ? 'Use Password instead' : 'Use OTP instead';
+      if (useOTP) requestOTP();
+    });
+
+    // Dummy function to simulate sending OTP
+    function requestOTP() {
+      const mobile = document.getElementById('mobile').value;
+      if (!/^[0-9]{10}$/.test(mobile)) return;
+      // TODO: call your backend to send an SMS OTP to `mobile`
+      console.log('Requesting OTP for', mobile);
+
+      // Attempt Web OTP API autofill
+      if ('OTPCredential' in window) {
+        navigator.credentials.get({
+          otp: { transport: ['sms'] },
+          signal: new AbortController().signal
+        }).then(otp => {
+          document.getElementById('otp').value = otp.code;
+        }).catch(err => {
+          console.log('Web OTP API not available or timed out', err);
+        });
+      }
+    }
+
+    // Basic inline validation
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const form = e.target;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      // Collect data
+      const data = {
+        mobile: form.mobile.value,
+        name:   form.name.value,
+        method: useOTP ? 'otp' : 'password',
+        credential: useOTP ? form.otp.value : form.password.value
+      };
+      console.log('Logging in with', data);
+      // TODO: POST `data` to your login endpoint
+    });
+  </script>
+</body>
+</html>

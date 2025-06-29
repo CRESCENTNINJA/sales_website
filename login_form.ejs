@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Complete Profile – MySimpleApp</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    .logo {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .logo img {
+      width: 70px;
+    }
+    .logo h1 {
+      font-size: 1.6em;
+      margin: 10px 0 0;
+      color: #333;
+    }
+    .container {
+      background: white;
+      padding: 30px 25px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      margin-top: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+    h2 {
+      color: #222;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: border-color 0.2s ease-in-out;
+    }
+    input[type="text"]:focus, input[type="number"]:focus {
+      border-color: #25D366;
+      box-shadow: 0 0 8px #25D366;
+    }
+    button {
+      background-color: #25D366;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #1cb857;
+    }
+    .optional {
+      font-size: 13px;
+      color: #999;
+      margin-top: -14px;
+      margin-bottom: 10px;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 13px;
+      color: #777;
+      text-align: center;
+      padding-bottom: 20px;
+    }
+    @media (max-width: 500px) {
+      .container {
+        padding: 25px 20px;
+      }
+      h2 {
+        font-size: 1.3em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="logo.png" alt="Logo" />
+    <h1>MySimpleApp</h1>
+  </div>
+
+  <div class="container">
+    <h2>Complete Your Profile</h2>
+    <form id="profile-form" action="/create/user" method="POST" onsubmit="return validateProfile()">
+      <input 
+        type="text" 
+        name="name" 
+        placeholder="Full Name" 
+        required 
+        autocomplete="name" 
+        maxlength="50"
+      />
+      
+      <!-- <input 
+        type="text" 
+        name="rct_id" 
+        placeholder="RCT ID (3 digits)" 
+        required 
+        maxlength="3" 
+        inputmode="numeric" 
+        pattern="\d{3}" 
+        title="Please enter exactly 3 digits"
+      /> -->
+      
+      <input 
+        type="text" 
+        name="pincode" 
+        placeholder="Pincode (optional)" 
+        maxlength="6" 
+        inputmode="numeric" 
+        pattern="\d{0,6}" 
+        title="Please enter up to 6 digits"
+      />
+      <div class="optional">* Pincode is optional</div>
+      
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <div class="footer">
+    📍 Locations: Bengaluru, Mysuru, Tumkur``<br/>
+    📞 Support: 1800-123-456 | © 2025 MySimpleApp
+  </div>
+
+  <script>
+    function validateProfile() {
+      const form = document.getElementById('profile-form');
+      const name = form.name.value.trim();
+      const rctId = form.rct_id.value.trim();
+      const pincode = form.pincode.value.trim();
+
+      // Name validation: at least 2 characters
+      if (name.length < 2) {
+        alert("Please enter your full name.");
+        form.name.focus();
+        return false;
+      }
+
+      // RCT ID validation: exactly 3 digits
+      if (!/^\d{3}$/.test(rctId)) {
+        alert("RCT ID must be exactly 3 digits.");
+        form.rct_id.focus();
+        return false;
+      }
+
+      // Pincode validation: optional but if present, must be 1-6 digits
+      if (pincode.length > 0 && !/^\d{1,6}$/.test(pincode)) {
+        alert("Pincode must be numeric and up to 6 digits.");
+        form.pincode.focus();
+        return false;
+      }
+
+      return true;
+    }
+  </script>
+
+</body>
+</html>

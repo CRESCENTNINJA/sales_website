@@ -1,0 +1,136 @@
+<!-- phone.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login with WhatsApp – MySimpleApp</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f3f4f6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 0 20px;
+    }
+
+    .logo {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .logo img {
+      width: 70px;
+    }
+
+    .logo h1 {
+      font-size: 1.6em;
+      margin: 10px 0 0;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      margin-top: 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #222;
+    }
+
+    input[type="tel"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      outline: none;
+    }
+
+    input[type="tel"]::placeholder {
+      color: #999;
+    }
+
+    button {
+      width: 100%;
+      background-color: #25D366;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #1cb857;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 13px;
+      color: #777;
+      text-align: center;
+      padding-bottom: 20px;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 25px 20px;
+      }
+
+      h2 {
+        font-size: 1.2em;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="logo.png" alt="Logo" />
+    <h1>MySimpleApp</h1>
+  </div>
+
+  <div class="container">
+    <h2>Enter Mobile Number</h2>
+    <form action="otp.html" method="post" onsubmit="return validatePhone()">
+      <input type="tel" name="phone" id="phone" maxlength="10" inputmode="numeric" pattern="[0-9]*" placeholder="10-digit mobile number" required />
+      <button>Send WhatsApp OTP</button>
+    </form>
+  </div>
+
+  <div class="footer">
+    📍 Locations: Bengaluru, Mysuru, Tumkur<br/>
+    📞 Support: 1800-123-456 | © 2025 MySimpleApp
+  </div>
+
+  <script>
+    function validatePhone() {
+      const phone = document.getElementById('phone').value;
+      if (!/^\d{10}$/.test(phone)) {
+        alert("Please enter a valid 10-digit mobile number.");
+        return false;
+      }
+      return true;
+    }
+  </script>
+
+</body>
+</html>

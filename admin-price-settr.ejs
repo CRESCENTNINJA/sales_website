@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin: Update Prices</title>
+  <style>
+    /* your existing CSS… */
+    .alert-error {
+      background: #ffe6e6; border:1px solid #e02424;
+      padding:0.5rem; margin-bottom:1rem; border-radius:8px;
+      color:#a4262c;
+    }
+    .form-row { display:flex; gap:0.5rem; margin-bottom:1rem; }
+    .form-group { flex:1; }
+    label { display:block; font-size:0.9rem; margin-bottom:0.25rem; }
+    input { width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:6px; }
+    button { padding:0.75rem 1.5rem; background:#25D366; color:#fff; border:none; border-radius:8px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Update Garment Prices</h1>
+
+    <% if (error) { %>
+      <div class="alert-error"><%= error %></div>
+    <% } %>
+
+    <form action="/admin/prices" method="POST" novalidate>
+      <% TYPES.forEach(t => { %>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="<%= t %>_price">
+              <%= t.charAt(0).toUpperCase()+t.slice(1) %> Sell Price
+            </label>
+            <input
+              id="<%= t %>_price"
+              name="<%= t %>_price"
+              type="text"
+              value="<%= prices[t].price %>"
+              placeholder="e.g. 799"/>
+          </div>
+          <div class="form-group">
+            <label for="<%= t %>_orgprice">
+              <%= t.charAt(0).toUpperCase()+t.slice(1) %> MRP
+            </label>
+            <input
+              id="<%= t %>_orgprice"
+              name="<%= t %>_orgprice"
+              type="text"
+              value="<%= prices[t].orgprice %>"
+              placeholder="e.g. 999"/>
+          </div>
+        </div>
+      <% }) %>
+
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+</body>
+</html>
