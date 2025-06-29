@@ -439,3 +439,24 @@ app.post('/order/place', isUserLoggedIn, async (req, res, next) => {
     next(err); // let your global error handler send a 500
   }
 });
+app.get('/setup/create-default-admin', async (req, res) => {
+  try {
+    // If an admin already exists, block access
+    const exists = await adminModel.countDocuments();
+    if (exists) {
+      return res.status(403).send('Admin already exists – remove this route or ignore.');
+    }
+
+    // Create the default admin (plain‑text password; hash with bcrypt in prod!)
+    await adminModel.create({
+      Name:  'Default Admin',
+      phone: '8708056843',
+      password: 'mayank'
+    });
+
+    res.send('✅ Default admin created. You can now log in at /user/u/login');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error seeding admin');
+  }
+});
