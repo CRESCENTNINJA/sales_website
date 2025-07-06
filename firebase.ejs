@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Optional Fast2SMS meta (kept in case you want to swap to their REST API later) -->
+    <meta name="fast2sms" content="gwcDuUR7h1sj3Lykhli6cKfRPxigMeCM" />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Login – READY CUT TAILORS</title>
+  </head>
+  <body>
+    <h1>Welcome to READY CUT TAILORS</h1>
+
+    <!-- Phone Input -->
+    <div id="phoneInputSection">
+      <input
+        type="tel"
+        id="phoneNumberInput"
+        placeholder="Enter 10-digit mobile number"
+      />
+      <div id="recaptcha-container"></div>
+      <button id="sendOtpButton">Send OTP</button>
+      <p id="errorPhone" style="color: red"></p>
+    </div>
+
+    <!-- OTP Verification -->
+    <div id="otpVerificationSection" style="display: none">
+      <input type="number" id="otpInput" placeholder="Enter OTP" />
+      <button id="verifyOtpButton">Verify</button>
+      <p id="errorOtp" style="color: red"></p>
+    </div>
+
+    <!-- Signed in -->
+    <div id="loggedInSection" style="display: none">
+      <p>
+        Logged in! <span id="userIdDisplay"></span>
+      </p>
+      <button id="signOutButton">Sign Out</button>
+    </div>
+
+    <!-- Firebase Auth Script -->
+    <script type="module">
+      // =============== Firebase SDK Imports ===============
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        RecaptchaVerifier,
+        signInWithPhoneNumber,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+      // =============== Firebase Config ===============
+      const firebaseConfig = {
+        apiKey: "AIzaSyC0UPkwNq7JkMyZWhvdUTQ0DEmRkOOLcKA",
+        authDomain: "ready-cut-tailors.firebaseapp.com",
+        projectId: "ready-cut-tailors",
+        storageBucket: "ready-cut-tailors.firebasestorage.app",
+        messagingSenderId: "831161246623",
+        appId: "1:831161246623:web:f517f2792943a7baedd3aa",
+        measurementId: "G-E1NRJYXLWL",
+      };
+
+      // =============== Initialize Firebase ===============
+      const firebaseApp = initializeApp(firebaseConfig);
+      const auth = getAuth(firebaseApp);
+
+      // =============== DOM Elements ===============
+      const phoneInputElement = document.getElementById("phoneNumberInput");
+      const sendOtpButtonElement = document.getElementById("sendOtpButton");
+      const otpInputElement = document.getElementById("otpInput");
+      const verifyOtpButtonElement = document.getElementById("verifyOtpButton");
+      const signOutButtonElement = document.getElementById("signOutButton");
+      const otpVerificationSectionElement = document.getElementById(
+        "otpVerificationSection",
+      );
+      const loggedInSectionElement = document.getElementById("loggedInSection");
+      const userIdDisplayElement = document.getElementById("userIdDisplay");
+      const errorPhoneElement = document.getElementById("errorPhone");
+      const errorOtpElement = document.getElementById("errorOtp");
+
+      // =============== Global Reference ===============
+      let confirmationResultGlobal = null;
+
+      // =============== reCAPTCHA Setup ===============
+      const recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "normal",
+          callback: () => {
+            sendOtpButtonElement.disabled = false; // Enable send button when captcha solved
+          },
+          "expired-callback": () => {
+            sendOtpButtonElement.disabled = true; // Disable when captcha expires
+          },
+        },
+      );
+
+      // Render the reCAPTCHA widget immediately
+      await recaptchaVerifier.render();
+
+      // =============== Send OTP Handler ===============
+      sendOtpButtonElement.addEventListener("click", async () => {
+        let phoneNumberLocal = phoneInputElement.value.trim();
+
+        if (!phoneNumberLocal || phoneNumberLocal.length < 10) {
+          errorPhoneElement.textContent =
+            "Please enter a valid 10-digit phone number.";
+          return;
+        }
+
+        // Ensure country code +91
+        if (!phoneNumberLocal.startsWith("+91")) {
+          phoneNumberLocal = "+91" + phoneNumberLocal;
+        }
+
+        // Clear previous errors
+        errorPhoneElement.textContent = "";
+
+        console.log("Attempting to sign in with phone number...", phoneNumberLocal);
+
+        try {
+          confirmationResultGlobal = await signInWithPhoneNumber(
+            auth,
+            phoneNumberLocal,
+            recaptchaVerifier,
+          );
+
+          console.log(
+            "signInWithPhoneNumber successful! Confirmation result:",
+            confirmationResultGlobal,
+          );
+
+          // Reveal OTP box
+          otpVerificationSectionElement.style.display = "block";
+        } catch (error) {
+          // ===========================
+          // 500 or internal errors here
+          // ===========================
+          console.error(
+            "Error during signInWithPhoneNumber:",
+            error.code,
+            error.message,
+          );
+
+          errorPhoneElement.textContent = error.message;
+
+          // New modular API uses .clear() instead of .reset()
+          recaptchaVerifier.clear();
+        }
+      });
+
+      // =============== Verify OTP Handler ===============
+      verifyOtpButtonElement.addEventListener("click", async () => {
+        const otpLocal = otpInputElement.value.trim();
+
+        if (!otpLocal) {
+          errorOtpElement.textContent = "Please enter the OTP.";
+          return;
+        }
+
+        try {
+          const result = await confirmationResultGlobal.confirm(otpLocal);
+          const user = result.user;
+          console.log("User signed in:", user.uid);
+          userIdDisplayElement.textContent = user.uid;
+
+          // Show logged‑in UI
+          loggedInSectionElement.style.display = "block";
+          otpVerificationSectionElement.style.display = "none";
+          errorOtpElement.textContent = "";
+        } catch (error) {
+          console.error(error);
+          errorOtpElement.textContent = "Invalid OTP. Try again.";
+        }
+      });
+
+      // =============== Sign‑Out Handler ===============
+      signOutButtonElement.addEventListener("click", async () => {
+        await signOut(auth);
+        window.location.reload();
+      });
+
+      // =============== Monitor Auth State ===============
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          loggedInSectionElement.style.display = "block";
+          userIdDisplayElement.textContent = user.uid;
+        } else {
+          loggedInSectionElement.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>

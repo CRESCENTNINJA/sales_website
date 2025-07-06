@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Confirmed – RCT Tailors</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body { font-family:'Segoe UI', system-ui, sans-serif; background:#f3f4f6; margin:0; padding:0; }
+    .container { max-width:600px; margin: 0 auto; padding: 20px; text-align: center; }
+    .card {
+      background:#fff; border-radius:12px; padding:30px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.05);
+      margin-top: 40px;
+    }
+    .emoji { font-size:60px; margin-bottom:20px; }
+    h1 { font-size:26px; font-weight:700; color:#25D366; margin-bottom:10px; }
+    p { font-size:18px; color:#333; margin-bottom:12px; }
+    .address-box {
+      background:#f9fafb; border:1px solid #ccc; border-radius:8px;
+      padding:15px; font-size:16px; color:#444;
+      margin: 20px auto; text-align: left;
+    }
+    .btn {
+      display:inline-block; background:#25D366; color:#fff;
+      padding:12px 20px; border:none; border-radius:10px;
+      font-size:18px; font-weight:600;
+      text-decoration:none; margin-top: 16px;
+      transition: background 0.2s ease;
+    }
+    .btn:hover { background:#1eb85e; }
+    header, footer {
+      background:#fff; padding:12px 0;
+      text-align:center; font-size:16px; color:#555;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    }
+    footer { margin-top: 40px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo" style="font-size:22px; font-weight:700; color:#25D366;">RCT Tailors</div>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div class="emoji">🎉</div>
+      <h1>Order Placed Successfully!</h1>
+      <p>Thank you <strong><%= user.Name %></strong>! Your order <strong>#<%= order.orderNumber %></strong> has been placed.</p>
+      <p>We are committed to delivering it within <strong>48 hours</strong>.</p>
+      <p>We'll keep you updated on your WhatsApp: <strong><%= user.whatsapp %></strong></p>
+      
+      <div class="address-box">
+        <strong>Delivery Address:</strong><br>
+        <span id="addressBox">Fetching your address...</span>
+      </div>
+
+      <a id="whatsappBtn" target="_blank" class="btn">Confirm or Update Address via WhatsApp</a>
+    </div>
+  </div>
+
+  <footer>
+    <p>Bengaluru, Karnataka, India | <a href="mailto:support@mytailorapp.com">support@mytailorapp.com</a></p>
+  </footer>
+
+  <script>
+    const lat = <%= order.deliveryLcation.latitude %>;
+    const lon = <%= order.deliveryLcation.longitude %>;
+    const userName = "<%= user.Name %>";
+    const orderId = "<%= order.orderNumber %>";
+    const whatsapp = "<%= user.whatsapp %>";
+    const myPhone = "918888888888"; // Replace with your own number
+
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+      .then(res => res.json())
+      .then(data => {
+        const addr = data.display_name;
+        document.getElementById('addressBox').textContent = addr;
+        const message = encodeURIComponent(`Hello! I placed an order with ID ${orderId}.
+My name is ${userName}.
+This is my location: ${addr}`);
+        document.getElementById('whatsappBtn').href = `https://wa.me/${myPhone}?text=${message}`;
+      })
+      .catch(() => {
+        document.getElementById('addressBox').textContent = 'Could not fetch address. Please confirm manually.';
+        const message = encodeURIComponent(`Hello! I placed an order with ID ${orderId}.
+My name is ${userName}.
+Please find my current location here.`);
+        document.getElementById('whatsappBtn').href = `https://wa.me/${myPhone}?text=${message}`;
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Tailoring Showroom</title>
+  <style>
+    /* Base & Layout */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f3f4f6;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 16px;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header, footer {
+      text-align: center;
+      padding: 1rem;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    /* Logo & Title */
+    .logo {
+      max-width: 120px;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      margin: 0.5rem 0 1rem;
+      font-size: 1.5rem;
+      color: #25D366;
+    }
+    /* Quote */
+    .quote {
+      font-style: italic;
+      margin-bottom: 1.5rem;
+      color: #555;
+    }
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      margin: 0.5rem 0;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease;
+      background-color: #25D366;
+      color: #fff;
+    }
+    .btn:hover {
+      background-color: #1da851;
+    }
+    /* Callback Form */
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #25D366;
+      box-shadow: 0 0 0 3px rgba(37,211,102,0.2);
+    }
+    /* Footer */
+    footer {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    /* Responsive */
+    @media (max-width: 480px) {
+      .card { padding: 1rem; }
+      h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Showroom Logo" class="logo">
+    <h1>Perfect Fit Tailoring</h1>
+  </header>
+
+  <main>
+    <div class="card">
+      <p class="quote">"Crafting Your Style, Stitch by Stitch"</p>
+
+      <p>Visit our showroom at:</p>
+      <a class="btn" href="https://www.google.com/maps/dir/?api=1&destination=Your+Showroom+Address" target="_blank" rel="noopener" aria-label="Get directions to our showroom">Get Directions</a>
+
+      <p>Call us directly:</p>
+      <a class="btn" href="tel:+911234567890" aria-label="Call our showroom">+91 12345 67890</a>
+
+      <hr style="margin:1.5rem 0; border:none; border-top:1px solid #eee;">
+
+      <p>Need a call back? Just share your details and we'll ring you:</p>
+      <form action="#" method="post">
+        <div class="form-group">
+          <label for="name">Your Name</label>
+          <input type="text" id="name" name="name" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="Enter phone number" inputmode="numeric" required>
+        </div>
+        <button type="submit" class="btn">Request a Call Back</button>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>123 Fashion St, Style City</p>
+    <p>Need help? <a href="mailto:support@perfectfit.com">support@perfectfit.com</a></p>
+  </footer>
+</body>
+</html>

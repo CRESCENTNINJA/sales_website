@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Garment - Tailor App</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: #f3f4f6; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; flex-grow: 1; }
+        .card { cursor: pointer; position: relative; }
+        .card-blurred { pointer-events: auto; }
+        .card-blurred::after { content: "Measurements Not Available"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255,255,255,0.9); padding: 0.5rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; pointer-events: none; }
+        .measurement-list { width: 100%; list-style: none; margin-top: 1rem; padding: 0; display: none;}
+        .measurement-list li { display: flex; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding: 0.25rem 0; font-size: 0.9rem; }
+        .measurement-list li span:first-child { text-transform: capitalize; color: #4b5563; }
+        .btn-primary { background-color: #25D366; color: white; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; transition: background-color 0.2s ease-in-out; }
+        .btn-primary:hover { background-color: #1da852; }
+        .modal-backdrop { background: rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+  <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
+    <div class="flex items-center">
+      <img src="https://placehold.co/40x40/25D366/ffffff?text=L" alt="Logo" class="h-10 w-10 rounded-full mr-3">
+      <h1 class="text-2xl font-semibold text-gray-800">Tailor App</h1>
+    </div>
+    <div class="flex items-center space-x-6">
+      <span class="text-gray-700 font-medium">Hello, <%= user.Name %>!</span>
+      <button id="cartButton" class="relative flex items-center text-gray-700 hover:text-gray-900 focus:outline-none">
+        <i class="fas fa-shopping-cart text-2xl"></i>
+        <span id="cartCount" class="cart-count hidden bg-red-500 text-white rounded-full px-2 text-xs absolute -top-1 -right-2">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container mx-auto p-6 flex-grow">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Select Your Garments</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <% TYPES.forEach(type => { %>
+        <% const hasMeasurement = finaldict[type] !== undefined; %>
+        <% const measureInfo = finaldict[type] || {}; %>
+        <% const latestDate = hasMeasurement ? new Date(measureInfo.date).toLocaleString('en-GB') : 'N/A'; %>
+        <% const priceObj = prices[type] || { price: 'N/A', orgprice: 'N/A' }; %>
+        <% const emoji = { kurta:'👕', pant:'👖', shirt:'👔', pajama:'🩳', formalCoat:'🧥' }[type] || '✨'; %>
+
+        <div class="card p-6 bg-white rounded-lg shadow hover:shadow-lg transition <%= hasMeasurement ? '' : 'card-blurred' %>" data-type="<%= type %>">
+          <div class="text-6xl mb-4"><%= emoji %></div>
+          <h3 class="text-xl font-semibold text-gray-800 capitalize mb-2"><%= type %></h3>
+          <div class="status-tag <%= hasMeasurement ? 'status-available' : 'status-not-available' %>">
+            <%= hasMeasurement ? 'Measured' : 'Not Measured' %>
+          </div>
+          <p class="text-sm text-gray-500 mt-2">Last Measured: <span class="font-medium"><%= latestDate %></span></p>
+
+          <% if (hasMeasurement) { %>
+            <ul class="measurement-list">
+              <% Object.entries(measureInfo.data).forEach(([key, val]) => { %>
+                <% if (key !== 'specialRequirement' || val) { %>
+                  <li><span><%= key.replace(/([A-Z])/g, ' $1') %></span><span><%= val %></span></li>
+                <% } %>
+              <% }); %>
+            </ul>
+            <!-- Add or Qty controls -->
+            <button class="add-btn btn-primary mt-4 w-full" data-type="<%= type %>">Add to Cart</button>
+            <div class="quantity-control hidden flex items-center space-x-3 mt-4 w-full justify-center">
+              <button class="decrement-btn" data-type="<%= type %>">-</button>
+              <span class="quantity-display w-12 text-center font-semibold" data-type="<%= type %>">0</span>
+              <button class="increment-btn" data-type="<%= type %>">+</button>
+            </div>
+          <% } %>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Continue Button -->
+    <div class="flex justify-center mt-8">
+      <button id="continueButton" class="btn-primary flex items-center px-6 py-3">
+        <i class="fas fa-arrow-right mr-2"></i> Continue to Cart
+      </button>
+    </div>
+  </main>
+
+  <!-- Measurement Modal -->
+  <div id="measurementModal" class="fixed inset-0 hidden items-center justify-center modal-backdrop">
+    <div class="bg-white rounded-lg p-6 w-80 relative text-center">
+      <button id="closeModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"><i class="fas fa-times"></i></button>
+      <h3 class="text-lg font-semibold mb-4">Need a measurement for <span id="modalType"></span>?</h3>
+      <button id="shopBtn" class="btn-primary mb-3 w-full">Visit Shop</button>
+      <button id="homeBtn" class="btn-primary w-full">Home Measurement</button>
+    </div>
+  </div>
+
+  <script>
+    const cart = JSON.parse(localStorage.getItem('tailorCart')) || {};
+    const syncCart = () => {
+      const badge = document.getElementById('cartCount');
+      const total = Object.values(cart).reduce((sum, v) => sum + v, 0);
+      badge.textContent = total;
+      badge.classList.toggle('hidden', total === 0);
+      localStorage.setItem('tailorCart', JSON.stringify(cart));
+
+      // Toggle buttons per card
+      document.querySelectorAll('.card').forEach(card => {
+        const type = card.dataset.type;
+        const addBtn = card.querySelector('.add-btn');
+        const qtyDiv = card.querySelector('.quantity-control');
+        const display = card.querySelector('.quantity-display');
+        if (cart[type] && cart[type] > 0) {
+          addBtn.classList.add('hidden');
+          qtyDiv.classList.remove('hidden');
+          display.textContent = cart[type];
+        } else {
+          addBtn.classList.remove('hidden');
+          qtyDiv.classList.add('hidden');
+        }
+      });
+    };
+
+    // Add button listener
+    document.querySelectorAll('.add-btn').forEach(btn => btn.addEventListener('click', e => {
+      const type = e.target.dataset.type;
+      cart[type] = 1;
+      syncCart();
+    }));
+
+    // Increment/decrement
+    document.addEventListener('click', e => {
+      if (e.target.matches('.increment-btn')) {
+        const type = e.target.dataset.type;
+        cart[type] = (cart[type] || 0) + 1;
+        syncCart();
+      }
+      if (e.target.matches('.decrement-btn')) {
+        const type = e.target.dataset.type;
+        if (cart[type] > 0) {
+          cart[type]--;
+          syncCart();
+        }
+      }
+    });
+
+    // Continue button
+    document.getElementById('continueButton').addEventListener('click', () => {
+      window.location.href = '/user/cart';
+    });
+
+    // Modal logic
+    const modal = document.getElementById('measurementModal');
+    const modalType = document.getElementById('modalType');
+    let selectedType = '';
+    document.querySelectorAll('.card-blurred').forEach(card => card.addEventListener('click', () => {
+      selectedType = card.dataset.type;
+      modalType.textContent = selectedType;
+      modal.classList.remove('hidden'); modal.classList.add('flex');
+    }));
+    document.getElementById('closeModal').addEventListener('click', () => modal.classList.add('hidden'));
+    document.getElementById('shopBtn').addEventListener('click', () => window.location.href = `/user/shop-measurement?type=${selectedType}`);
+    document.getElementById('homeBtn').addEventListener('click', () => {
+      if (navigator.geolocation) navigator.geolocation.getCurrentPosition(pos => window.location.href = `/user/home-measurement?type=${selectedType}&lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`);
+      else alert('Geolocation not supported');
+    });
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', syncCart);
+  </script>
+</body>
+</html>

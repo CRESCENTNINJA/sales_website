@@ -86,11 +86,9 @@ app.post("/verify" , async (req,res)=>
 
 const plainPassword = await req.body.password.trim(); // Paste exactly from req.body
 const hashedPassword = await userz.password; // Paste exactly from DB
-
 console.log("Password JSON:", JSON.stringify(plainPassword));
 console.log("Password Length:", plainPassword.length);
 console.log("Hash Length:", hashedPassword.length);
-
 ismatch = await bcrypt.compare(plainPassword, hashedPassword); 
 
 if (ismatch)

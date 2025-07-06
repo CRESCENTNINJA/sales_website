@@ -1,0 +1,116 @@
+<!-- admin-home-visits.ejs (mobile‑first, 40+ friendly) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  
+  <meta name="fast2sms" content="gwcDuUR7h1sj3Lykhli6cKfRPxigMeCM">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Home Visits</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background:#f3f4f6; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-sm py-4 px-6 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <img src="/logo.png" alt="Logo" class="h-8 w-8" />
+      <span class="text-xl font-semibold text-gray-800">Ready Cut Tailors – Admin</span>
+    </div>
+    <nav>
+      <a href="/admin/orders" class="text-green-600 hover:underline">Orders</a>
+    </nav>
+  </header>
+
+  <main class="flex-grow container mx-auto p-4 sm:p-6">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-4">Home Measurement Requests</h1>
+
+    <!-- Mobile card list -->
+    <div class="space-y-4 sm:hidden">
+      <% visits.forEach(v => { %>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-medium text-gray-800"><%= v.user.Name %></span>
+            <% if (v.whatsapped) { %>
+              <span class="text-xs bg-green-500 text-white rounded-full px-2 py-0.5">WhatsApped</span>
+            <% } else { %>
+              <span class="text-xs bg-red-500 text-white rounded-full px-2 py-0.5">Not WA</span>
+            <% } %>
+          </div>
+          <p class="text-sm text-gray-600 mb-1"><strong>Garment:</strong> <%= v.garment %></p>
+          <p class="text-sm text-gray-600 mb-1"><strong>Address:</strong> <%= v.address %></p>
+          <p class="text-sm text-gray-600 mb-3"><strong>Phone:</strong> <a href="tel:<%= v.phone %>" class="text-green-600 underline"><%= v.phone %></a></p>
+          <div class="flex flex-col space-y-2">
+            <a href="https://www.google.com/maps/search/?api=1&query=<%= v.coords.lat %>,<%= v.coords.lon %>" target="_blank"
+               class="text-center bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-2">Map</a>
+            <a href="tel:<%= v.phone %>"
+               class="text-center bg-green-500 hover:bg-green-600 text-white rounded-lg py-2">Call</a>
+            <% if (v.status !== 'done') { %>
+              <form action="/admin/home-visits/<%= v._id %>/done" method="POST">
+                <button class="w-full bg-gray-700 hover:bg-gray-800 text-white rounded-lg py-2">Done</button>
+              </form>
+            <% } else { %>
+              <span class="w-full inline-block bg-gray-300 text-gray-600 rounded-lg py-2 text-center">Completed</span>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Desktop table -->
+    <div class="hidden sm:block">
+      <div class="overflow-x-auto bg-white rounded-xl shadow">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 text-gray-700">
+            <tr>
+              <th class="px-4 py-3 text-left">Customer</th>
+              <th class="px-4 py-3 text-left">Garment</th>
+              <th class="px-4 py-3 text-left">Phone</th>
+              <th class="px-4 py-3 text-left">Address</th>
+              <th class="px-4 py-3 text-left">WhatsApped</th>
+              <th class="px-4 py-3 text-left">Status</th>
+              <th class="px-4 py-3 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% visits.forEach(v => { %>
+              <tr class="border-b last:border-none">
+                <td class="px-4 py-3 font-medium text-gray-800"><%= v.user.Name %></td>
+                <td class="px-4 py-3 capitalize"><%= v.garment %></td>
+                <td class="px-4 py-3"><a href="tel:<%= v.phone %>" class="text-green-600 underline"><%= v.phone %></a></td>
+                <td class="px-4 py-3 text-gray-600"><%= v.address %></td>
+                <td class="px-4 py-3">
+                  <% if (v.whatsapped) { %>
+                    <span class="text-xs bg-green-500 text-white rounded-full px-2">Yes</span>
+                  <% } else { %>
+                    <span class="text-xs bg-red-500 text-white rounded-full px-2">No</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 capitalize"><%= v.status %></td>
+                <td class="px-4 py-3 space-x-2 whitespace-nowrap">
+                  <a href="https://www.google.com/maps/search/?api=1&query=<%= v.coords.lat %>,<%= v.coords.lon %>" target="_blank"
+                     class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg">Map</a>
+                  <a href="tel:<%= v.phone %>"
+                     class="inline-block bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg">Call</a>
+                  <% if (v.status !== 'done') { %>
+                    <form action="/admin/home-visits/<%= v._id %>/done" method="POST" class="inline">
+                      <button class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1 rounded-lg">Done</button>
+                    </form>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white p-4 text-center text-gray-600 text-sm">
+    Bengaluru, India  |  Support: <a href="tel:+911234567890" class="text-green-600">+91 12345 67890</a>
+  </footer>
+</body>
+</html>

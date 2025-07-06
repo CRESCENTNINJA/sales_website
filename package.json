@@ -1,29 +1,32 @@
 {
   "name": "project-01",
   "version": "1.0.0",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js",        
-    "dev": "nodemon app.js"         
+    "test": "nodemon app.js",
+    "dev": "kill-port 4000 && nodemon app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Tailor app backend",
+  "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
-    "dotenv": "^17.0.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^17.0.1",
     "ejs": "^3.1.10",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
+    "firebase": "^11.10.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "4.0",
     "mongoose": "^8.16.0",
-    "path": "^0.12.7"
+    "nodemon": "^3.1.10",
+    "path": "^0.12.7",
+    "razorpay": "^2.9.6",
+    "test": "^3.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10",
     "kill-port": "^2.0.1"
   }
 }

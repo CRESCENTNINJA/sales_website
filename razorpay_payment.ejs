@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Complete Your Payment – RCT Tailors</title>
+  <style>
+    body {
+      background-color: #f3f4f6;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 30px 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .logo {
+      height: 60px;
+      margin-bottom: 20px;
+    }
+    .footer {
+      font-size: 14px;
+      color: #666;
+      margin-top: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="/images/logo.png" class="logo" alt="RCT Logo" />
+    <h2>RCT Tailors</h2>
+    <p>Redirecting to secure payment...</p>
+  </div>
+
+  <form id="verifyForm" method="POST" action="/payments/verify" style="display:none">
+    <input type="hidden" name="orderId"   id="orderId" />
+    <input type="hidden" name="paymentId" id="paymentId" />
+    <input type="hidden" name="signature" id="signature" />
+  </form>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    const options = {
+      key: "<%= keyId %>",             // From server
+      amount: "<%= amount %>",         // In paise
+      currency: "INR",
+      name: "RCT Tailors",
+      description: "Garment Booking Payment",
+      image: "/images/logo.png",
+      order_id: "<%= orderId %>",      // From server
+      prefill: {
+        name: "<%= customerName %>",
+        email: "<%= customerEmail %>",
+        contact: "<%= customerContact %>"
+      },
+      theme: {
+        color: "#25D366"
+      },
+      handler: function (response) {
+        document.getElementById('orderId').value   = response.razorpay_order_id;
+        document.getElementById('paymentId').value = response.razorpay_payment_id;
+        document.getElementById('signature').value = response.razorpay_signature;
+        document.getElementById('verifyForm').submit(); // Post to server
+      },
+      modal: {
+        ondismiss: function () {
+          alert("Payment cancelled.");
+          window.location.href = "/"; // or show retry
+        }
+      }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open(); // Automatically opens Razorpay modal
+  </script>
+
+  <div class="footer">
+    Made with ❤️ in BNEGLURU<br>
+    Need help? Call us at +91-8708056843
+  </div>
+</body>
+</html>

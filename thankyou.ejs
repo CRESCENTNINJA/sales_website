@@ -1,0 +1,52 @@
+<!-- thank-you.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You – Ready Cut Tailors</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f3f4f6; }
+    @keyframes subtleBounce { 0%,100%{transform: translateY(0);} 50%{transform: translateY(-6px);} }
+    .logo-animate { animation: subtleBounce 3s ease-in-out infinite; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <!-- Placeholder image – replace src when logo URL provided -->
+      <img src="/logo.png" alt="Ready Cut Tailors" class="h-8 w-8" />
+      <span class="text-xl font-semibold text-gray-800">Ready Cut Tailors</span>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-10 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full text-center">
+      <h1 class="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4">Thank You for Choosing <span class="text-green-600">Ready Cut Tailors</span>!</h1>
+
+      <!-- Animated Logo -->
+      <div class="my-6 flex justify-center">
+        <!-- Replace src with final logo link -->
+        <img src="/logo.png" alt="RCT Logo" class="h-24 w-24 logo-animate" />
+      </div>
+
+      <p class="text-gray-600 leading-relaxed mb-6">
+        Your trust means the world to us. Our master tailors are already preparing to craft garments that fit your story as perfectly as they fit you. We can’t wait to see you look your best!
+      </p>
+
+      <a href="tel:+911234567890" class="inline-block bg-green-500 hover:bg-green-600 text-white text-lg font-medium px-6 py-3 rounded-xl transition focus:outline-none focus:ring-2 focus:ring-green-500">
+        📞 Call Us if Anything’s Needed
+      </a>
+
+      <p class="mt-6 text-gray-500 text-sm">We’re here 7 days a week, 10 am – 8 pm.</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white shadow-inner py-4 px-6 text-center text-gray-600 text-sm">
+    <p>Bengaluru, India  |  WhatsApp & Support: <a href="https://wa.me/1234567890" class="text-green-600">+91 12345 67890</a></p>
+  </footer>
+</body>
+</html>

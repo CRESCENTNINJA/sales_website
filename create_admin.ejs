@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Admin</title>
+
+    <style>
+.inpbox{
+    font-size: 16px;width: 80%;
+    border: 0.1px solid #ccc;
+    outline: none;
+    padding: 16px;
+    border-radius: 10px;
+        } 
+
+.inpbox:focus {
+    border-color: #25D366;
+    box-shadow: 5px 5px 10px #25D366;
+} 
+    
+
+
+
+
+
+body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f3f4f6;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      min-height: 100vh;
+    } 
+    #container 
+    {
+    height: 700px; background-color: white;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    /* justify-content: center; */
+    align-items: center;   
+    }
+
+    .otpdiv{
+    display:flex; flex-direction: row; 
+    gap: 5px;
+    justify-content: center;
+    
+    }
+
+    .otpa {
+        font-size: 13px; padding: 17px;
+        border: 1px solid #ccc;
+        width: 12%;
+        border-radius: 10px; 
+    }
+.otp-container
+{
+width: 100%;
+
+}
+    </style>
+</head>
+<body>
+<h1>READY CUT TAILORS</h1>
+    <div id="logocontainer">
+LOGO
+</div>
+<form action="/y/create/admin"  method="post">
+
+<div id="container">
+<input type="text" autofocus name="name" placeholder="Enter your name" class="inpbox">
+<input type="text" inputmode="numeric" maxlength="10"  name="phone" id="phonebox" class="inpbox" placeholder="Enter your phone number" >
+<input type="password" name="password" class="inpbox" placeholder="Enter password">
+<input type="email" name="email" id="" class="inpbox" placeholder="Enter your Email">
+<input type="hidden" name="latitude" id="latitude">
+<input type="hidden" name="longitude" id="longitude">
+<input type="hidden" name="accuracy" id="accuracy">
+
+<div class="otp-container">
+<h4>Enter OTP sent to OWNER :</h4>
+<div class="otpdiv">
+    
+    <input type="text" name="otp11" id="otpa1 " class="otpa inpbox " maxlength="1"/>
+    <input type="text" name="otp12" id="otpa2" class="otpa inpbox" maxlength="1"/>
+    <input type="text" name="otp13" id="otpa3" class="otpa inpbox" maxlength="1"/>
+    <input type="text" name="otp14" id="otpa4" class="otpa inpbox " maxlength="1"/>
+</div>
+</div>
+
+<div class="otp-container">
+<h4>Enter OTP sent to Your phone :</h4>
+<div class="otpdiv">
+    <input type="text" name="otp21" id="otpb1 " class="otpa inpbox " maxlength="1"/>
+    <input type="text" name="otp22" id="otpb2" maxlength="1" class="otpa inpbox" />
+    <input type="text" name="otp23" id="otpb3" class="otpa inpbox" maxlength="1"/>
+    <input type="text" name="otp24" id="otpb4" class="otpa inpbox " maxlength="1"/>
+
+</div>
+</div>
+<button class="inpbox">Create</button>
+</div>
+</form>
+    
+</body>
+
+<script>
+
+latitudebox = document.querySelector("#latitude")
+longitudebox = document.querySelector("#longitude")
+accuracybox = document.querySelector("#accuracy")
+// to move the focus front or back 
+otpinps = document.querySelectorAll(".otpa") 
+
+otpinps.forEach((element , i)=>
+{
+element.addEventListener("input" , ()=>
+{
+if (i <(otpinps.length-1) && /^\d$/.test(element.value))
+{
+    otpinps[i+1].focus() ;
+}
+})
+element.addEventListener("keydown" , (e)=>
+{
+if (e.key === "Backspace" && element.value === "")
+{
+    otpinps[i-1].focus() ;
+}
+})
+})
+
+const options = {
+  enableHighAccuracy: true,
+  timeout: 5000,
+  maximumAge: 0,
+};
+
+function success(pos) {
+  const crd = pos.coords;
+
+  console.log("Your current position is:");
+  latitudebox.value = crd.latitude ;
+  longitudebox.value = crd.longitude ;
+  accuracybox.value = crd.accuracy ;
+
+}
+
+function error(err) {
+  console.warn(`ERROR(${err.code}): ${err.message}`);
+}
+
+navigator.geolocation.getCurrentPosition(success, error, options);
+
+ 
+
+
+
+</script>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Complete Your Payment</title>
+</head>
+<body>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    const options = {
+      key: "<%= keyId %>",
+      amount: "<%= amount %>",          // in paise
+      currency: "INR",
+      order_id: "<%= orderId %>",
+      handler: function (response) {
+        // On success, verify server‑side
+        fetch('/payments/verify', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            orderId:   response.razorpay_order_id,
+            paymentId: response.razorpay_payment_id,
+            signature: response.razorpay_signature,
+            orderDbId: "<%= orderDbId %>"
+          })
+        })
+        .then(res=>res.json())
+        .then(json=>{
+          if (json.status === 'ok') {
+            alert("Payment successful!");
+            window.location.href = '/order/confirmation/' + "<%= orderDbId %>";
+          } else {
+            alert("Signature verification failed.");
+          }
+        });
+      },
+      prefill: { /* you can prefill name/email here if you like */ }
+    };
+    // Open checkout on page load
+    const rzp = new Razorpay(options);
+    rzp.open();
+  </script>
+</body>
+</html>

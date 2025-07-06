@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Select Fabric – RCT Tailors</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f3f4f6;
+      min-height: 100vh;
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      transition: .3s;
+      text-align: center;
+    }
+    .price-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .btn {
+      margin-top: 12px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .3s;
+    }
+    .btn.primary {
+      background: #25D366;
+      color: #fff;
+    }
+    .btn.secondary {
+      background: #6b7280;
+      color: #fff;
+    }
+    .unit-label {
+      margin-left: 8px;
+      font-weight: 600;
+      color: #555;
+    }
+    input[type="number"], select {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+    }
+    input[type="number"]:focus, select:focus {
+      border-color: #25D366;
+      outline: none;
+      box-shadow: 0 0 0 2px #25D36633;
+    }
+    .cart-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      box-shadow: 0 -2px 8px rgba(0,0,0,.1);
+      padding: 14px 20px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 999;
+    }
+    .cart-items {
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 4px 0;
+      font-size: 16px;
+    }
+    .cart-total {
+      text-align: right;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .checkout-btn {
+      background: #25D366;
+      color: #fff;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="text-3xl font-bold text-center mb-4">Select Your Fabric</h1>
+    <p class="text-center text-lg font-semibold mb-6">“Quality is our guarantee – just pick your design!”</p>
+
+    <!-- Unit Toggle -->
+    <div class="flex justify-center gap-4 mb-8">
+      <button id="feetBtn" class="btn primary">Feet</button>
+      <button id="meterBtn" class="btn secondary">Meter</button>
+    </div>
+
+    <!-- Cloth Grid -->
+    <div id="clothGrid" class="grid">
+      <% cloths.forEach(function(cloth) { %>
+        <div class="card">
+          <img src="<%= cloth.photoUrl %>" alt="<%= cloth.name %>" style="max-width:100%; border-radius:8px; margin-bottom:12px;">
+          <div class="name text-xl font-medium capitalize"><%= cloth.name %></div>
+          <div class="price-row">
+            <span class="text-gray-600">Price per meter:</span>
+            <span class="final-price text-green-600 font-semibold">₹<%= cloth.pricePerMeter.toFixed(2) %></span>
+          </div>
+          <div class="mb-4">
+            <select id="garment-<%= cloth._id %>" class="mb-2">
+              <option value="">Select Garment</option>
+              <% items.forEach(function(item) { %>
+                <option value="<%= item %>"><%= item.charAt(0).toUpperCase() + item.slice(1) %></option>
+              <% }); %>
+            </select>
+          </div>
+          <div>
+            <input type="number" id="quantity-<%= cloth._id %>" inputmode="numeric" min="0" step="0.1" placeholder="Quantity">
+            <span id="unitLabel-<%= cloth._id %>" class="unit-label">feet</span>
+          </div>
+          <button class="btn primary add-cloth-btn mt-4" data-cloth-id="<%= cloth._id %>">Add Cloth</button>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <!-- Sticky Cart Bar for Cloth -->
+  <div id="clothCartBar" class="cart-bar">
+    <div id="clothCartItems" class="cart-items"></div>
+    <div id="clothCartTotal" class="cart-total">Total Cloth: ₹0.00</div>
+    <button class="checkout-btn" onclick="submitCloth()">Proceed to Payment</button>
+  </div>
+
+  <!-- Optional Footer -->
+  <footer class="container mt-12 text-center text-gray-600 text-sm">
+    Your Location: Bengaluru, Karnataka | Support: +91 12345 67890
+  </footer>
+
+  <script>
+    // Data from server
+    const cloths = <%- JSON.stringify(cloths) %>;
+    const items = <%- JSON.stringify(items) %>;
+
+    // Cart state
+    let clothCart = [];
+    let unit = 'feet';
+
+    // Required cloth (in meters) per garment type
+    const requiredCloth = {
+      kurta:     6,    // e.g. 6 meters for a kurta
+      pajama:    5,    // 5 meters for a pajama
+      pant:      5,    // 5 meters for a pant
+      shirt:     4.5,  // 4.5 meters for a shirt
+      formalCoat:7     // 7 meters for a formal coat
+    };
+
+    // Handle unit toggle
+    function setUnit(u) {
+      unit = u;
+      if (u === 'feet') {
+        feetBtn.classList.add('primary');
+        feetBtn.classList.remove('secondary');
+        meterBtn.classList.remove('primary');
+        meterBtn.classList.add('secondary');
+        cloths.forEach(c => {
+          document.getElementById(`unitLabel-${c._id}`).textContent = 'feet';
+        });
+      } else {
+        meterBtn.classList.add('primary');
+        meterBtn.classList.remove('secondary');
+        feetBtn.classList.remove('primary');
+        feetBtn.classList.add('secondary');
+        cloths.forEach(c => {
+          document.getElementById(`unitLabel-${c._id}`).textContent = 'meter';
+        });
+      }
+    }
+
+    // Add cloth to cart
+    function addCloth(clothId) {
+      const cloth = cloths.find(c => c._id === clothId);
+      const garmentSelect = document.getElementById(`garment-${clothId}`);
+      const garment = garmentSelect.value;
+      if (!garment) {
+        alert('Please select a garment for this cloth.');
+        return;
+      }
+      const qtyInput = document.getElementById(`quantity-${clothId}`);
+      let qty = parseFloat(qtyInput.value);
+      if (!qty || qty <= 0) {
+        alert('Please enter a valid quantity.');
+        return;
+      }
+      // Convert to meters if needed
+      const qtyMeter = (unit === 'feet') ? qty * 0.3048 : qty;
+      const required = requiredCloth[garment] || 0;
+      if (qtyMeter < required) {
+        alert(`Minimum requirement for ${garment} is ${required} meters. Please increase quantity.`);
+        return;
+      }
+      const price = qtyMeter * cloth.pricePerMeter;
+      clothCart.push({
+        clothName: cloth.name,
+        garment: garment,
+        qty: qty.toFixed(2),
+        unit: unit,
+        price: price
+      });
+      updateClothCart();
+    }
+
+    // Update cart UI
+    function updateClothCart() {
+      const itemsEl = document.getElementById('clothCartItems');
+      const totalEl = document.getElementById('clothCartTotal');
+      itemsEl.innerHTML = '';
+      let total = 0;
+      clothCart.forEach(item => {
+        total += item.price;
+        itemsEl.insertAdjacentHTML('beforeend',
+          `<div class="cart-item">${item.clothName} for ${item.garment} (${item.qty} ${item.unit}) : ₹${item.price.toFixed(2)}</div>`
+        );
+      });
+      totalEl.textContent = 'Total Cloth: ₹' + total.toFixed(2);
+      document.getElementById('clothCartBar').style.display = clothCart.length ? 'flex' : 'none';
+    }
+
+    // Submit cloth selection and proceed
+    async function submitCloth() {
+      if (clothCart.length === 0) {
+        alert('No cloth selected.'); 
+        return;
+      }
+      const totalCloth = clothCart.reduce((sum, item) => sum + item.price, 0);
+      try {
+        const res = await fetch('/order/cloth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clothItems: clothCart, totalCloth: totalCloth })
+        });
+        if (res.ok) {
+          // Redirect to payment or next step
+          window.location.href = '/order/payment';
+        } else {
+          alert('Failed to submit cloth order. Please try again.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Network error. Please try again.');
+      }
+    }
+
+    // Event listeners
+    document.getElementById('feetBtn').onclick = () => setUnit('feet');
+    document.getElementById('meterBtn').onclick = () => setUnit('meter');
+    document.querySelectorAll('.add-cloth-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const clothId = btn.getAttribute('data-cloth-id');
+        addCloth(clothId);
+      });
+    });
+  </script>
+</body>
+</html>

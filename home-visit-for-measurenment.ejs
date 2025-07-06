@@ -1,0 +1,85 @@
+<!-- home-visit-for-measurement.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Measurement</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f3f4f6; }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="bg-white shadow-md py-4 px-6 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <img src="/logo.png" alt="Logo" class="h-8 w-8" />
+      <span class="text-xl font-semibold text-gray-800">Tailor App</span>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto px-4 py-6">
+    <div class="bg-white rounded-2xl p-6 shadow-lg max-w-md mx-auto">
+      <h1 class="text-2xl font-semibold text-gray-800 mb-4">Home Measurement</h1>
+      <p class="text-gray-600 mb-6">We’ve detected your location and address. Please confirm your details.</p>
+
+      <form action="/user/home-measurement-schedule" method="POST" class="space-y-4">
+        <input type="hidden" name="type" value="<%= type %>" />
+        <input type="hidden" name="lat" value="<%= latitude %>" />
+        <input type="hidden" name="lon" value="<%= longitude %>" />
+
+        <div>
+          <label for="name" class="block text-gray-700">Your Name</label>
+          <input type="text" id="name" name="name" value="<%= user.Name %>" required
+                 class="mt-1 w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+        <div>
+          <label for="phone" class="block text-gray-700">Phone Number</label>
+          <input type="tel" id="phone" name="phone"
+                 value="<%= user.phone || user.phoneNumber || user.Phone || user.Wphone || user.mobile || user.mobileNumber ||'' %>"
+                 inputmode="numeric" required
+                 class="mt-1 w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
+        </div>
+        <div>
+          <label for="address" class="block text-gray-700">Detected Address</label>
+          <textarea id="address" name="address" rows="3" readonly
+                    class="mt-1 w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500">Loading address...</textarea>
+        </div>
+
+        <div class="flex flex-col sm:flex-row sm:space-x-4">
+          <button type="submit"
+                  class="bg-green-500 hover:bg-green-600 rounded-xl w-full text-white font-medium py-3 transition">Confirm & Schedule</button>
+          <button type="button" id="incorrectBtn"
+                  class="mt-3 sm:mt-0 bg-red-500 hover:bg-red-600 rounded-xl w-full text-white font-medium py-3 transition">Incorrect? WhatsApp Us</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white shadow-inner py-4 px-6 text-center text-gray-600 text-sm">
+    <p>Location: Bengaluru, India | Support: <a href="tel:+919876543210" class="text-green-600">+91 98765 43210</a></p>
+  </footer>
+
+  <!-- Debug & Reverse Geocoding -->
+  <script>
+    console.log("USER object:", <%- JSON.stringify(user) %>);
+    const lat = '<%= latitude %>';
+    const lon = '<%= longitude %>';
+    const addressEl = document.getElementById('address');
+
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`)
+      .then(r => r.json())
+      .then(data => { addressEl.value = data.display_name || ''; })
+      .catch(() => { addressEl.value = 'Unable to fetch address'; });
+
+    document.getElementById('incorrectBtn').addEventListener('click', () => {
+      const name = encodeURIComponent(document.getElementById('name').value);
+      const phone = encodeURIComponent(document.getElementById('phone').value);
+      const msg = `Name: ${name}%0APhone: ${phone}%0ALocation: https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}`;
+      window.open(`https://wa.me/1234567890?text=${encodeURIComponent(msg)}`, '_blank');
+    });
+  </script>
+</body>
+</html>
