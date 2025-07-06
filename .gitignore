@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# environment
+.env
+
+# logs
+*.log
+
+# system files
+.DS_Store
+
+# backups
+*.bak
